@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Игра</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/style.css">
+  <script src="demo-api.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Пазл - 2x2</h1>
+
+        <div class="game-info">
+            <div class="timer">
+                <span>Время: </span>
+                <span id="time-counter">0.0</span>
+                <span> секунд</span>
+            </div>
+        </div>
+
+        <div class="puzzle-container">
+            <canvas id="puzzle-canvas" width="500" height="500"></canvas>
+            <div id="completion-message" class="completion-message" style="display:none;">
+                <h2>Поздравляем!</h2>
+                <p id="completion-time"></p>
+                <p id="best-time"></p>
+            </div>
+        </div>
+
+        <div id="game-controls" class="game-controls">
+            <a href="difficulty.html" class="game-button">Назад к выбору сложности</a>
+        </div>
+
+        <div id="completion-controls" class="game-controls" style="display:none;">
+            <button id="next-puzzle-button" class="game-button">Следующий пазл</button>
+            <a href="difficulty.html" class="game-button">Назад к выбору сложности</a>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const difficulty = new URLSearchParams(location.search).get("difficulty") || "2x2";
+        const imageName = window.demoPickImage();
+        let rows = 2, cols = 2;
+
+        if (difficulty === "3x3") {
+            rows = cols = 3;
+        } else if (difficulty === "4x4") {
+            rows = cols = 4;
+        }
+
+        const canvas = document.getElementById('puzzle-canvas');
+        const ctx = canvas.getContext('2d');
+        const timeCounter = document.getElementById('time-counter');
+        const gameControls = document.getElementById('game-controls');
+        const completionControls = document.getElementById('completion-controls');
+        const nextPuzzleButton = document.getElementById('next-puzzle-button');
+
+        let pieces = [];
+        let selectedPiece = null;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let originalImage = new Image();
+
+        // Загрузка изображения с расширенной обработкой ошибок
+        console.log("Attempting to load image:", imageName);
+        originalImage.src = "static/" + imageName + ".jpg";
+        
+        originalImage.onerror = function() {
+            console.error("Failed to load image:", imageName);
+            console.error("Image path attempted:", "static/" + imageName + ".jpg");
+            
+            // Пробуем альтернативный путь
+            const altSrc = "static/" + imageName + ".jpg";
+            console.log("Trying alternative path:", altSrc);
+            originalImage.src = altSrc;
+            
+            originalImage.onerror = function() {
+                console.error("Failed to load image from alternative path:", altSrc);
+                alert("Не удалось загрузить изображение пазла. Пожалуйста, убедитесь, что файлы изображений доступны.");
+            };
+        };
+        
+        originalImage.onload = function() {
+            console.log("Image loaded successfully:", originalImage.src);
+            console.log("Image dimensions:", originalImage.width, "x", originalImage.height);
+            initGame();
+        };
+
+        function initGame() {
+            splitImage();
+            shufflePieces();
+            startTimer();
+        }
+
+        // Game functions
+        function splitImage() {
+            // Расчет точных размеров кусочков для равного деления
+            const pieceWidth = canvas.width / cols;
+            const pieceHeight = canvas.height / rows;
+
+            // Проверка правильности количества строк и столбцов
+            console.log(`Разделение на кусочки: ${rows}x${cols} = ${rows*cols} кусочков`);
+            pieces = [];
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const pieceCanvas = document.createElement('canvas');
+                    pieceCanvas.width = pieceWidth;
+                    pieceCanvas.height = pieceHeight;
+                    const pieceCtx = pieceCanvas.getContext('2d');
+
+                    // Точное вычисление координат для вырезания части изображения
+                    const sourceX = col * (originalImage.width / cols);
+                    const sourceY = row * (originalImage.height / rows);
+                    const sourceWidth = originalImage.width / cols;
+                    const sourceHeight = originalImage.height / rows;
+
+                    // Draw this piece of the image
+                    pieceCtx.drawImage(
+                        originalImage,
+                        sourceX, sourceY, sourceWidth, sourceHeight,
+                        0, 0, pieceWidth, pieceHeight
+                    );
+
+                    pieces.push({
+                        img: pieceCanvas,
+                        currentPos: { x: col * pieceWidth, y: row * pieceHeight },
+                        correctPos: { x: col * pieceWidth, y: row * pieceHeight },
+                        width: pieceWidth,
+                        height: pieceHeight
+                    });
+                }
+            }
+        }
+
+        function shufflePieces() {
+            const positions = Array.from({ length: pieces.length }, (_, i) => i);
+            for (let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+
+            const pieceWidth = canvas.width / cols;
+            const pieceHeight = canvas.height / rows;
+
+            for (let i = 0; i < pieces.length; i++) {
+                const posIdx = positions[i];
+                const row = Math.floor(posIdx / cols);
+                const col = posIdx % cols;
+
+                pieces[i].currentPos.x = col * pieceWidth;
+                pieces[i].currentPos.y = row * pieceHeight;
+            }
+
+            drawPieces();
+        }
+
+        function drawPieces() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const pieceWidth = Math.floor(canvas.width / cols);
+            const pieceHeight = Math.floor(canvas.height / rows);
+
+            // Draw pieces
+            for (const piece of pieces) {
+                ctx.drawImage(
+                    piece.img,
+                    piece.currentPos.x,
+                    piece.currentPos.y,
+                    pieceWidth,
+                    pieceHeight
+                );
+            }
+
+            // Draw grid lines
+            ctx.strokeStyle = '#4a4a8c';
+            ctx.lineWidth = 1;
+
+            // Draw grid lines
+            for (let i = 0; i <= cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * pieceWidth, 0);
+                ctx.lineTo(i * pieceWidth, canvas.height);
+                ctx.stroke();
+            }
+
+            for (let i = 0; i <= rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * pieceHeight);
+                ctx.lineTo(canvas.width, i * pieceHeight);
+                ctx.stroke();
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            elapsedTime = (Date.now() - startTime) / 1000;
+            timeCounter.textContent = elapsedTime.toFixed(1);
+        }
+
+        function isPuzzleComplete() {
+            for (const piece of pieces) {
+                if (piece.currentPos.x !== piece.correctPos.x || 
+                    piece.currentPos.y !== piece.correctPos.y) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function checkPuzzleComplete() {
+            if (isPuzzleComplete()) {
+                stopTimer();
+
+                // Скрыть обычные элементы управления и показать элементы завершения
+                gameControls.style.display = 'none';
+                completionControls.style.display = 'flex';
+
+                // Send completion data to server
+                fetch('/complete_puzzle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        time: elapsedTime,
+                        difficulty: difficulty
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const completionMessage = document.getElementById('completion-message');
+                    const completionTime = document.getElementById('completion-time');
+                    const bestTime = document.getElementById('best-time');
+
+                    completionTime.textContent = `Время: ${elapsedTime.toFixed(1)} секунд`;
+
+                    if (data.is_new_record) {
+                        bestTime.textContent = "Новый рекорд!";
+                    } else if (data.previous_best) {
+                        bestTime.textContent = `Лучшее время: ${data.previous_best.toFixed(1)} секунд`;
+                    }
+
+                    completionMessage.style.display = 'block';
+                });
+            }
+        }
+
+        // Обработчик для кнопки "Следующий пазл"
+        nextPuzzleButton.addEventListener('click', function() {
+            // Перезагрузить страницу с тем же уровнем сложности для нового пазла
+            window.location.href = `play.html?difficulty=${difficulty}`;
+        });
+
+        // Canvas event listeners for drag and drop
+        let isDragging = false;
+        let dragStartX, dragStartY;
+        let draggedPieceIndex = -1;
+
+        canvas.addEventListener('mousedown', e => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Find which piece was clicked
+            for (let i = pieces.length - 1; i >= 0; i--) {
+                const piece = pieces[i];
+                if (mouseX >= piece.currentPos.x && 
+                    mouseX < piece.currentPos.x + piece.width &&
+                    mouseY >= piece.currentPos.y && 
+                    mouseY < piece.currentPos.y + piece.height) {
+
+                    isDragging = true;
+                    draggedPieceIndex = i;
+                    dragStartX = mouseX - piece.currentPos.x;
+                    dragStartY = mouseY - piece.currentPos.y;
+
+                    // Move this piece to the end of the array so it's drawn on top
+                    const draggedPiece = pieces.splice(i, 1)[0];
+                    pieces.push(draggedPiece);
+                    draggedPieceIndex = pieces.length - 1;
+
+                    break;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            if (isDragging && draggedPieceIndex !== -1) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const piece = pieces[draggedPieceIndex];
+                piece.currentPos.x = mouseX - dragStartX;
+                piece.currentPos.y = mouseY - dragStartY;
+
+                // Redraw all pieces
+                drawPieces();
+            }
+        });
+
+        canvas.addEventListener('mouseup', e => {
+            if (isDragging && draggedPieceIndex !== -1) {
+                const piece = pieces[draggedPieceIndex];
+
+                // Check if the piece is close to its correct position
+                const thresholdX = piece.width / 4;
+                const thresholdY = piece.height / 4;
+
+                if (Math.abs(piece.currentPos.x - piece.correctPos.x) <= thresholdX && 
+                    Math.abs(piece.currentPos.y - piece.correctPos.y) <= thresholdY) {
+                    // Snap to correct position
+                    piece.currentPos.x = piece.correctPos.x;
+                    piece.currentPos.y = piece.correctPos.y;
+                }
+
+                // Reset drag state
+                isDragging = false;
+                draggedPieceIndex = -1;
+
+                // Redraw pieces
+                drawPieces();
+
+                // Check if puzzle is complete
+                checkPuzzleComplete();
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            draggedPieceIndex = -1;
+        });
+    </script>
+</body>
+</html>

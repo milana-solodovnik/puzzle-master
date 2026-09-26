@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Выбор сложности</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/style.css">
+  <script src="demo-api.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Выбор сложности</h1>
+
+        <div class="difficulty-buttons">
+            <button onclick="startGame('2x2')" class="difficulty-button">Лёгкий (2x2)</button>
+            <button onclick="startGame('3x3')" class="difficulty-button">Средний (3x3)</button>
+            <button onclick="startGame('4x4')" class="difficulty-button">Сложный (4x4)</button>
+        </div>
+
+        <a href="main_menu.html" class="menu-back-button">Назад в меню</a>
+    </div>
+
+    <script>
+        function startGame(difficulty) {
+            window.location.href = `play.html?difficulty=${difficulty}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Главное меню</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/style.css">
+  <script src="demo-api.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать, <span id="demo-username">…</span>!</h1>
+        
+        <div class="menu-buttons">
+            <a href="difficulty.html" class="menu-button">Играть в пазл</a>
+            <a href="achievements.html" class="menu-button">Достижения</a>
+            <button id="delete-account" class="menu-button delete-button">Удалить аккаунт</button>
+            <a href="index.html" data-demo="logout" class="menu-button">Выйти</a>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('delete-account').addEventListener('click', function() {
+            if(confirm('Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/delete_account';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

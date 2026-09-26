@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Достижения</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/style.css">
+    <style>
+        .achievement-reward {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .achievement-reward-text {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .achievement-reward-image {
+            width: 100px;
+            height: 70px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+            border: 1px solid #4a4a8c;
+        }
+        
+        .achievement-unearned .achievement-reward-image {
+            opacity: 0.3;
+        }
+        
+        .achievement-earned .achievement-reward-image {
+            opacity: 1;
+        }
+    </style>
+  <script src="demo-api.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Достижения</h1>
+        
+        <div class="achievements-list">
+            <!-- Achievement: First puzzle -->
+            <div class="achievement achievement-unearned">
+                <h2>Первый пазл собран</h2>
+                <div class="achievement-status incomplete" data-demo-ach="first_puzzle">Не выполнено</div>
+                <div class="achievement-reward">
+                    <div class="achievement-reward-text">Награда:</div>
+                    <div class="achievement-reward-image" style="background-image: url('/puzzle_image/puzzle2');"></div>
+                </div>
+            </div>
+            
+            <!-- Achievement: Five puzzles -->
+            <div class="achievement achievement-unearned">
+                <h2>Собрано 5 пазлов</h2>
+                <div class="achievement-status incomplete" data-demo-ach="five_puzzles">Не выполнено</div>
+                <div class="achievement-reward">
+                    <div class="achievement-reward-text">Награды:</div>
+                    <div class="achievement-reward-image" style="background-image: url('/puzzle_image/puzzle3'); margin-right: 10px;"></div>
+                    <div class="achievement-reward-image" style="background-image: url('/puzzle_image/puzzle4');"></div>
+                </div>
+            </div>
+            
+            <!-- Achievement: Speed master -->
+            <div class="achievement achievement-unearned">
+                <h2>Мастер скорости</h2>
+                <div class="achievement-status incomplete" data-demo-ach="speed_master">Не выполнено</div>
+                <div class="achievement-description">
+                    Собрать пазл 4x4 меньше чем за 30 секунд
+                </div>
+                <div class="achievement-reward">
+                    <div class="achievement-reward-text">Награда:</div>
+                    <div class="achievement-reward-image" style="background-image: url('/puzzle_image/puzzle5');"></div>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="best-times-title">Лучшее время</h2>
+        
+        <div class="best-times">
+            <div class="best-time">
+                <span>Лёгкий (2x2):</span>
+                <span data-demo-time="2x2">Ещё не собран</span>
+                <span></span>
+            </div>
+            
+            <div class="best-time">
+                <span>Средний (3x3):</span>
+                <span data-demo-time="3x3">Ещё не собран</span>
+                <span></span>
+            </div>
+            
+            <div class="best-time">
+                <span>Сложный (4x4):</span>
+                <span data-demo-time="4x4">Ещё не собран</span>
+                <span></span>
+            </div>
+        </div>
+        
+        <a href="main_menu.html" class="menu-back-button">Назад в меню</a>
+    </div>
+</body>
+</html>
