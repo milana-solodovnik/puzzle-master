@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Регистрация</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Создание аккаунта</h1>
+        
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        
+        <form action="{{ url_for('register') }}" method="post">
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="primary-button">Зарегистрироваться</button>
+                <a href="{{ url_for('login') }}" class="secondary-button">Назад ко входу</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

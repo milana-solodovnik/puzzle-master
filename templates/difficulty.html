@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детская игра Пазл - Выбор сложности</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Выбор сложности</h1>
+
+        <div class="difficulty-buttons">
+            <button onclick="startGame('2x2')" class="difficulty-button">Лёгкий (2x2)</button>
+            <button onclick="startGame('3x3')" class="difficulty-button">Средний (3x3)</button>
+            <button onclick="startGame('4x4')" class="difficulty-button">Сложный (4x4)</button>
+        </div>
+
+        <a href="{{ url_for('main_menu') }}" class="menu-back-button">Назад в меню</a>
+    </div>
+
+    <script>
+        function startGame(difficulty) {
+            window.location.href = `{{ url_for('play') }}?difficulty=${difficulty}`;
+        }
+    </script>
+</body>
+</html>
